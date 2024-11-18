@@ -1,3 +1,5 @@
+![poster](/image/poster.webp "poster")
+
 # Job Scraper
 
 This project is a job scraper designed to gather job listings from various sources. It is structured in Python and organized to maintain separation of concerns between configuration, business logic, helpers, routing, and singleton instances.
