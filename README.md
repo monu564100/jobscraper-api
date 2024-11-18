@@ -103,6 +103,8 @@ Stores singleton instances for libraries:
 
 2. The application will expose endpoints defined in the `routes` folder.
 
+Example : `GET http://127.0.0.1:5000/api/jobstreet?work=flutter`
+
 ---
 
 ## Contributing

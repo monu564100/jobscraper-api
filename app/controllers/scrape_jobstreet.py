@@ -4,11 +4,23 @@ from flask import jsonify
 from app.helpers.response import ResponseHelper
 from app.singletons.cloudscraper import CloudScraper
 
-def scrape_jobstreet(work='Programmer', location='', page=1, cookies_file='app/config/jobstreet.json'):
-    url = f"https://id.jobstreet.com/id/{work}-jobs/in-{location}?page={page}"
-    
+def scrape_jobstreet(work='Programmer', location='', country="id",page=1, cookies_file='app/config/jobstreet.json'):
+    country_urls = {
+        "id": "https://id.jobstreet.com/id/{work}-jobs/in-{location}?page={page}",
+        "my": "https://my.jobstreet.com/{work}-jobs/in-{location}?page={page}",
+        "sg": "https://sg.jobstreet.com/{work}-jobs/in-{location}?page={page}",
+        "th": "https://th.jobsdb.com/th/{work}-jobs/in-{location}?page={page}",
+        "hk": "https://hk.jobsdb.com/{work}-jobs/in-{location}?page={page}",
+        "nz": "https://www.seek.co.nz/{work}-jobs/in-{location}?page={page}",
+        "au": "https://www.seek.com.au/{work}-jobs/in-{location}?page={page}",
+    }
+
+
+    if country not in country_urls:
+        country = "id"  
+    url = country_urls[country].format(work=work, location=location, page=page)
+
     try:
-        # Dapatkan instance cloudscraper dari CloudScraper Singleton
         scraper = CloudScraper.get_instance()
         
         # Kirim permintaan ke URL
@@ -51,7 +63,7 @@ def scrape_jobstreet(work='Programmer', location='', page=1, cookies_file='app/c
 
             # Ekstrak link pekerjaan
             link_tag = job_card.find('a', href=True, attrs={"data-automation": "jobTitle"})
-            link = f"https://id.jobstreet.com{link_tag['href']}" if link_tag else 'N/A'
+            link = f"https://{country_urls[country].split('/')[2]}{link_tag['href']}" if link_tag else 'N/A'
 
             results.append({
                 'title': title,
@@ -88,7 +100,7 @@ def scrape_jobstreet(work='Programmer', location='', page=1, cookies_file='app/c
             for link in suggestion_links:
                 suggestion_location.append({
                     'location_name': link.get_text(strip=True),
-                    'url': f"https://id.jobstreet.com{link['href']}" if link.has_attr('href') else 'N/A'
+                    'url': f"https://{country_urls[country].split('/')[2]}{link['href']}" if link.has_attr('href') else 'N/A'
                 })
 
         return ResponseHelper.success_response('Success find job', {
@@ -104,4 +116,3 @@ def scrape_jobstreet(work='Programmer', location='', page=1, cookies_file='app/c
 
     except Exception as e:
         return ResponseHelper.failure_response(f"Error: {str(e)}")
-

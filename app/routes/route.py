@@ -25,9 +25,10 @@ def scrape_jobstreet_route():
     try:
         work = request.args.get('work', 'Programmer')
         location = request.args.get('location', 'Jakarta Raya')
+        country = request.args.get('country','id')
         page = request.args.get('page','1')
 
 
-        return scrape_jobstreet(work,location,page)
+        return scrape_jobstreet(work,location,country,page)
     except Exception as e:
         return {"status": "failed", "message": f"Error: {str(e)}"}, 500
