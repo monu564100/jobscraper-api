@@ -1,5 +1,6 @@
 from flask import Blueprint, request
-from app.controllers.scrape_glints import scrape_jobs
+from app.controllers.scrape_glints import scrape_glints
+from app.controllers.scrape_jobstreet import scrape_jobstreet
 
 scraper_bp = Blueprint('scraper', __name__)
 
@@ -15,6 +16,18 @@ def scrape():
         location_name = request.args.get('location_name', 'All+Cities/Provinces')
 
         # Panggil fungsi scraping dengan parameter
-        return scrape_jobs(work, job_type, option_work, location_id, location_name, page)
+        return scrape_glints(work, job_type, option_work, location_id, location_name, page)
+    except Exception as e:
+        return {"status": "failed", "message": f"Error: {str(e)}"}, 500
+
+@scraper_bp.route('/jobstreet', methods=['GET'])
+def scrape_jobstreet_route():
+    try:
+        work = request.args.get('work', 'Programmer')
+        location = request.args.get('location', 'Jakarta Raya')
+        page = request.args.get('page','1')
+
+
+        return scrape_jobstreet(work,location,page)
     except Exception as e:
         return {"status": "failed", "message": f"Error: {str(e)}"}, 500

@@ -4,7 +4,7 @@ from flask import jsonify
 from app.helpers.response import ResponseHelper
 from app.singletons.cloudscraper import CloudScraper  
 
-def scrape_jobs(work='Programmer', job_type='FULL_TIME', option_work='ONSITE',location_id='',location_name='All+Cities/Provinces',page='1',cookies_file='app/config/glints.json'):
+def scrape_glints(work='Programmer', job_type='FULL_TIME', option_work='ONSITE',location_id='',location_name='All+Cities/Provinces',page='1',cookies_file='app/config/glints.json'):
      # Validasi parameter
     valid_job_types = ['FULL_TIME', 'PART_TIME', 'CONTRACT', 'INTERNSHIP']
     valid_work_options = ['ONSITE', 'HYBRID', 'REMOTE']

@@ -37,7 +37,7 @@ Root
     │   │ response.py
     │
     ├───routes
-    │   │   scrape_glints_route.py
+    │   │   route.py
     │
     ├───singletons
     │   │   cloudscraper.py
@@ -81,7 +81,7 @@ Utility functions to be reused across the project:
 
 Defines API routes and links them to their corresponding logic:
 
-- `scrape_glints_route.py`: Route for triggering Glints scraping logic.
+- `route.py`: Route for triggering Controller scraping logic.
 
 #### **singletons**
 
