@@ -19,7 +19,7 @@ def load_cookies(file_path):
         jar.set(
             name=cookie.get('name'),
             value=cookie.get('value'),
-            domain=cookie.get('domain', 'glints.com'),
+            domain=cookie.get('domain', ''),
             path=cookie.get('path', '/'),
             secure=cookie.get('secure', True),
             rest={'HttpOnly': cookie.get('httpOnly', True)}

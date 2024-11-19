@@ -1,6 +1,7 @@
 from flask import Blueprint, request
 from app.controllers.scrape_glints import scrape_glints
 from app.controllers.scrape_jobstreet import scrape_jobstreet
+from app.controllers.scrape_remoteok import scrape_remoteok
 
 scraper_bp = Blueprint('scraper', __name__)
 
@@ -30,5 +31,14 @@ def scrape_jobstreet_route():
 
 
         return scrape_jobstreet(work,location,country,page)
+    except Exception as e:
+        return {"status": "failed", "message": f"Error: {str(e)}"}, 500
+
+@scraper_bp.route('/remoteok',methods=['GET'])
+def scrape_remoteok_route():  
+    try:
+        keywords = request.args.get('keywords','python')
+
+        return scrape_remoteok(keywords)
     except Exception as e:
         return {"status": "failed", "message": f"Error: {str(e)}"}, 500
