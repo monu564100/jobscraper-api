@@ -162,3 +162,4 @@ cython_debug/
 .idea/
 glints.json
 jobstreet.json
+indeed.json
