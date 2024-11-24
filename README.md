@@ -105,6 +105,8 @@ Stores singleton instances for libraries:
 
 Example : `GET http://127.0.0.1:5000/api/jobstreet?work=flutter`
 
+3. Documentation About Endpoint Soon After All Done !
+
 ---
 
 ## Contributing
