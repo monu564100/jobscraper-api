@@ -3,6 +3,7 @@ from app.controllers.scrape_glints import scrape_glints
 from app.controllers.scrape_jobstreet import scrape_jobstreet
 from app.controllers.scrape_remoteok import scrape_remoteok
 from app.controllers.scrape_indeed import scrape_indeed
+from app.controllers.scrape_disnaker_bandung import scrape_disnaker_bandung
 
 scraper_bp = Blueprint('scraper', __name__)
 
@@ -55,3 +56,12 @@ def scrape_indeed_route():
         return scrape_indeed(keyword,location,country,page)
     except Exception as e:
         return {'status': 'failed','message': f"Error: {str(e)}"},500    
+
+@scraper_bp.route('/disnaker_bandung',methods=['GET'])
+def scrape_disnaker_bandung_route():
+    try:
+        page = request.args.get('page','1')
+        return scrape_disnaker_bandung(page)
+
+    except Exception as e:
+        return {"status": "failed", "message": f"Error: {str(e)}"}, 500             
