@@ -9,11 +9,11 @@
         "secure": false,
         "session": true,
         "storeId": null,
-        "value": "hkBWb9YLPgpeDqIu4gQfH4Ry7MG2lUJC"
+        "value": "sW9zpMrWVzpITDDVxqeQ4txaGaUWS6ni"
     },
     {
         "domain": ".indeed.com",
-        "expirationDate": 1732445681.910987,
+        "expirationDate": 1746426986.695901,
         "hostOnly": false,
         "httpOnly": true,
         "name": "__cf_bm",
@@ -22,11 +22,23 @@
         "secure": true,
         "session": false,
         "storeId": null,
-        "value": "gXBCWXGwtoBkuJXCUjJKRttCR2GUJtt6Om2k6g2bS5A-1732443881-1.0.1.1-6Uc384I9cqhVmqrS.S4.WuhttSO3YSGrOQW5kaYa_4h_3zOtSn8B8xWLa5yPWFobvj..MkzV3Br1lWA6fwS21g"
+        "value": "EK3bcHoQ12WDNEEsi9ZhK76nK6tKqk1p5CVk5m8u8nA-1746425186-1.0.1.1-xFBN6ouws.5Zl3cEDclCCmEeE_Ob6EePsrFSwT45vyIJ71N35RJhFaBIFG4KkHBlRzXXL6kLTcqJtUe3LU5Z0rU9L68I3nZ8nHUc710KDfM"
     },
     {
         "domain": "id.indeed.com",
-        "expirationDate": 1767003891.384483,
+        "hostOnly": true,
+        "httpOnly": false,
+        "name": "JSESSIONID",
+        "path": "/",
+        "sameSite": null,
+        "secure": true,
+        "session": true,
+        "storeId": null,
+        "value": "node0n43cikmfdeig10vqq5vdhawil28984111.node0"
+    },
+    {
+        "domain": "id.indeed.com",
+        "expirationDate": 1761977189.018638,
         "hostOnly": true,
         "httpOnly": false,
         "name": "LV",
@@ -35,19 +47,7 @@
         "secure": false,
         "session": false,
         "storeId": null,
-        "value": "\"LA=1732443889:CV=1732443889:TS=1732443889\""
-    },
-    {
-        "domain": ".indeed.com",
-        "hostOnly": false,
-        "httpOnly": false,
-        "name": "ENC_CSRF",
-        "path": "/",
-        "sameSite": null,
-        "secure": false,
-        "session": true,
-        "storeId": null,
-        "value": "IUVZtMF8xQVoM1KV3mvf5vdOeg0akEuV"
+        "value": "LA=1746425186:CV=1746425186:TS=1746425186"
     },
     {
         "domain": "id.indeed.com",
@@ -59,11 +59,11 @@
         "secure": true,
         "session": true,
         "storeId": null,
-        "value": "umLS2XO3mgg0pXvlYKvzV2DXGKSPWkW8"
+        "value": "0EvllaEG0YSJnYBBJrX5SC00PKFXtJ5M"
     },
     {
         "domain": ".indeed.com",
-        "expirationDate": 1739275216.272507,
+        "expirationDate": 1754201186.695678,
         "hostOnly": false,
         "httpOnly": false,
         "name": "RF",
@@ -72,23 +72,11 @@
         "secure": false,
         "session": false,
         "storeId": null,
-        "value": "\"TFTzyBUJoNr6YttPP3kyivpZ6-9J49o-Uk3iY6QNQqKE2fh7FyVgtbRZZH0vPDN7_8F9HIjWp-A=\""
+        "value": "\"TFTzyBUJoNr6YttPP3kyivpZ6-9J49o-Uk3iY6QNQqKE2fh7FyVgtR9gXNF1SedhL6UpDS0_gCU=\""
     },
     {
         "domain": ".indeed.com",
-        "hostOnly": false,
-        "httpOnly": false,
-        "name": "SHARED_INDEED_CSRF_TOKEN",
-        "path": "/",
-        "sameSite": null,
-        "secure": false,
-        "session": true,
-        "storeId": null,
-        "value": "s1TIQpXml1WMprO8F2avCf4eKuvPFE9p"
-    },
-    {
-        "domain": ".indeed.com",
-        "expirationDate": 1767003745.036351,
+        "expirationDate": 1747030000.648939,
         "hostOnly": false,
         "httpOnly": false,
         "name": "CTK",
@@ -97,20 +85,7 @@
         "secure": true,
         "session": false,
         "storeId": null,
-        "value": "1icimajeihelh801"
-    },
-    {
-        "domain": ".indeed.com",
-        "expirationDate": 1733048531.835815,
-        "hostOnly": false,
-        "httpOnly": true,
-        "name": "SURF",
-        "path": "/",
-        "sameSite": null,
-        "secure": true,
-        "session": false,
-        "storeId": null,
-        "value": "G1lma2vZha6W9HxvcTeUwEEXhUSzgK70"
+        "value": "1iqfgr2brgf6m800"
     },
     {
         "domain": ".indeed.com",
@@ -122,37 +97,11 @@
         "secure": true,
         "session": true,
         "storeId": null,
-        "value": "sHPk.oHxJQvro4xnuv8LiX.uvuQdynjol9SdaWa8pC0-1732442029704-0.0.1.1-604800000"
-    },
-    {
-        "domain": ".indeed.com",
-        "expirationDate": 1766060833.662965,
-        "hostOnly": false,
-        "httpOnly": false,
-        "name": "CO",
-        "path": "/",
-        "sameSite": null,
-        "secure": false,
-        "session": false,
-        "storeId": null,
-        "value": "ID"
+        "value": "bPpOi8WawxYpdlmiGL2JAlrbvaFPRvnFafF24K6H5MU-1746425186754-0.0.1.1-604800000"
     },
     {
         "domain": "id.indeed.com",
-        "expirationDate": 1767003890.047571,
-        "hostOnly": true,
-        "httpOnly": false,
-        "name": "CO",
-        "path": "/",
-        "sameSite": null,
-        "secure": false,
-        "session": false,
-        "storeId": null,
-        "value": "ID"
-    },
-    {
-        "domain": "id.indeed.com",
-        "expirationDate": 1767003891.38438,
+        "expirationDate": 1761977189.018559,
         "hostOnly": true,
         "httpOnly": false,
         "name": "indeed_rcc",
@@ -161,31 +110,32 @@
         "secure": false,
         "session": false,
         "storeId": null,
-        "value": "\"LV:CO\""
+        "value": "LV"
     },
     {
         "domain": ".indeed.com",
-        "expirationDate": 1763035268.969482,
+        "expirationDate": 1761977200.064651,
         "hostOnly": false,
-        "httpOnly": true,
-        "name": "LC",
+        "httpOnly": false,
+        "name": "mobnode",
         "path": "/",
         "sameSite": null,
         "secure": false,
         "session": false,
         "storeId": null,
-        "value": "\"co=ID\""
+        "value": "1"
     },
     {
-        "domain": ".indeed.com",
-        "hostOnly": false,
+        "domain": "id.indeed.com",
+        "expirationDate": 1761977200.064887,
+        "hostOnly": true,
         "httpOnly": false,
-        "name": "MICRO_CONTENT_CSRF_TOKEN",
+        "name": "RQ",
         "path": "/",
         "sameSite": null,
         "secure": false,
-        "session": true,
+        "session": false,
         "storeId": null,
-        "value": "Js2kNtfTRqeBHEIoBTxwDeKl0aicAMzc"
+        "value": "q=programmer&l=&ts=1746425199722"
     }
 ]

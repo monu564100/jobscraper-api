@@ -1,6 +1,5 @@
 import re
 from bs4 import BeautifulSoup
-from flask import jsonify
 from app.helpers.response import ResponseHelper
 from app.singletons.cloudscraper import CloudScraper  
 
@@ -45,57 +44,127 @@ def scrape_glints(work='Programmer', job_type='FULL_TIME', option_work='ONSITE',
         html = response.text
 
         soup = BeautifulSoup(html, 'html.parser')
+        
+        # Debug: Print HTML structure untuk analisis
+        print("HTML Structure for debugging:")
+        print(soup.prettify()[:2000])  # Print first 2000 chars
 
-          # Temukan elemen pagination
-        last_page = 1  # Default ke 1 jika tidak ada pagination
-        pagination = soup.find('div', class_='ExploreTabsc__PaginationContainer-sc-1fr7yeh-9')
+        # Coba berbagai selector untuk job cards
+        job_cards = []
+        
+        # Selector 1: Original
+        job_cards = soup.find_all('div', {'role': 'presentation', 'aria-label': 'Job Card'})
+        
+        # Selector 2: Alternative dengan class pattern
+        if not job_cards:
+            job_cards = soup.find_all('div', class_=re.compile(r'JobCard'))
+        
+        # Selector 3: Cari berdasarkan struktur link job
+        if not job_cards:
+            job_cards = soup.find_all('a', href=re.compile(r'/opportunities/jobs/'))
+            # Ambil parent container dari link
+            job_cards = [card.find_parent() for card in job_cards if card.find_parent()]
+        
+        # Selector 4: Cari berdasarkan h2 title dan ambil container
+        if not job_cards:
+            titles = soup.find_all('h2')
+            job_cards = [title.find_parent('div') for title in titles if title.find_parent('div')]
+        
+        print(f"Found {len(job_cards)} job cards")
+
+        # Temukan elemen pagination dengan selector yang lebih fleksibel
+        last_page = 1
+        
+        # Coba berbagai selector untuk pagination
+        pagination = soup.find('div', class_=re.compile(r'Pagination'))
+        if not pagination:
+            pagination = soup.find('nav', {'aria-label': 'pagination'})
+        if not pagination:
+            pagination = soup.find('div', class_=re.compile(r'pagination', re.I))
+        
         if pagination:
             page_buttons = pagination.find_all('button')
             if page_buttons:
-                last_page_button = page_buttons[-2]  # Tombol kedua terakhir biasanya nomor halaman terakhir
-                last_page = int(last_page_button.get_text(strip=True)) if last_page_button else 1
-
-        # Parse nomor halaman terakhir menjadi integer
-        last_page = int(last_page)
-
-        # Scraping data pekerjaan
-        job_cards = soup.find_all('div', {'role': 'presentation', 'aria-label': 'Job Card'})
+                # Ambil semua nomor halaman
+                page_numbers = []
+                for button in page_buttons:
+                    text = button.get_text(strip=True)
+                    if text.isdigit():
+                        page_numbers.append(int(text))
+                if page_numbers:
+                    last_page = max(page_numbers)
 
         results = []
 
         for job_card in job_cards:
-            # Ekstrak judul pekerjaan
+            if not job_card:
+                continue
+                
+            # Ekstrak judul pekerjaan dengan multiple selectors
+            title = 'N/A'
             title_tag = job_card.find('h2')
-            title = title_tag.get_text(strip=True) if title_tag else 'N/A'
+            if not title_tag:
+                title_tag = job_card.find('h3')
+            if not title_tag:
+                title_tag = job_card.find('a', href=re.compile(r'/opportunities/jobs/'))
+            if title_tag:
+                title = title_tag.get_text(strip=True)
 
-            # Ekstrak gaji
-            salary_tag = job_card.find('span', class_=re.compile(r'CompactOpportunityCardsc__SalaryWrapper'))
-            salary = salary_tag.get_text(strip=True) if salary_tag else 'N/A'
+            # Ekstrak gaji dengan pattern yang lebih fleksibel
+            salary = 'N/A'
+            salary_tag = job_card.find('span', class_=re.compile(r'Salary', re.I))
+            if not salary_tag:
+                salary_tag = job_card.find('span', string=re.compile(r'Rp|IDR|\$', re.I))
+            if not salary_tag:
+                # Cari text yang mengandung format gaji
+                salary_text = job_card.get_text()
+                salary_match = re.search(r'Rp[\d,.\s]+|IDR[\d,.\s]+|\$[\d,.\s]+', salary_text)
+                if salary_match:
+                    salary = salary_match.group()
+            if salary_tag:
+                salary = salary_tag.get_text(strip=True)
 
             # Ekstrak lokasi
-            location_tag = job_card.find('span', class_=re.compile(r'CardJobLocation__StyledTruncatedLocation'))
-            location = location_tag['title'] if location_tag and location_tag.has_attr('title') else 'N/A'
+            location = 'N/A'
+            location_tag = job_card.find('span', class_=re.compile(r'Location', re.I))
+            if not location_tag:
+                location_tag = job_card.find('span', title=True)
+            if location_tag:
+                location = location_tag.get('title', location_tag.get_text(strip=True))
 
             # Ekstrak link pekerjaan
-            link_tag = job_card.find('a', href=True)
-            link = f"https://glints.com{link_tag['href']}" if link_tag else 'N/A'
+            link = 'N/A'
+            link_tag = job_card.find('a', href=re.compile(r'/opportunities/jobs/'))
+            if link_tag:
+                href = link_tag.get('href')
+                if href:
+                    link = f"https://glints.com{href}" if href.startswith('/') else href
 
-             # Ekstrak nama perusahaan
-            company_name_tag = job_card.find('a', class_=re.compile(r'CompactOpportunityCardsc__CompanyLink'))
-            company_name = company_name_tag.get_text(strip=True) if company_name_tag else 'N/A'
+            # Ekstrak nama perusahaan
+            company_name = 'N/A'
+            company_tag = job_card.find('a', class_=re.compile(r'Company', re.I))
+            if not company_tag:
+                # Cari link yang mengarah ke company profile
+                company_tag = job_card.find('a', href=re.compile(r'/companies/'))
+            if company_tag:
+                company_name = company_tag.get_text(strip=True)
 
             # Ekstrak logo perusahaan
-            company_logo_tag = job_card.find('img', class_=re.compile(r'CompactOpportunityCardsc__CompanyAvatar'))
-            company_logo = company_logo_tag['src'] if company_logo_tag and company_logo_tag.has_attr('src') else 'N/A'
+            company_logo = 'N/A'
+            logo_tag = job_card.find('img')
+            if logo_tag and logo_tag.has_attr('src'):
+                company_logo = logo_tag['src']
 
-            results.append({
-                'title': title,
-                'salary': salary,
-                'location': location,
-                'company_name': company_name,
-                'company_logo': company_logo,
-                'link': link,
-            })
+            # Hanya tambahkan jika minimal title dan company ada
+            if title != 'N/A' or company_name != 'N/A':
+                results.append({
+                    'title': title,
+                    'salary': salary,
+                    'location': location,
+                    'company_name': company_name,
+                    'company_logo': company_logo,
+                    'link': link,
+                })
 
         # Tambahkan informasi halaman terakhir ke dalam hasil
         return ResponseHelper.success_response('Success find job', {
@@ -104,4 +173,5 @@ def scrape_glints(work='Programmer', job_type='FULL_TIME', option_work='ONSITE',
         })
 
     except Exception as e:
+        print(f"Error in scraping: {str(e)}")
         return ResponseHelper.failure_response(f"Error: {str(e)}")
