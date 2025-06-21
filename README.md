@@ -48,6 +48,10 @@ Root
             __init__.cpython-310.pyc
 ```
 
+### Docs Swagger
+
+You can access the API documentation at `http://127.0.0.1:5000/api/docs/`
+
 ### Root
 
 The root directory contains the main project files:
