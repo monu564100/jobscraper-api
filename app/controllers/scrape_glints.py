@@ -59,17 +59,6 @@ def scrape_glints(work='Programmer', job_type='FULL_TIME', option_work='ONSITE',
         if not job_cards:
             job_cards = soup.find_all('div', class_=re.compile(r'JobCard'))
         
-        # Selector 3: Cari berdasarkan struktur link job
-        if not job_cards:
-            job_cards = soup.find_all('a', href=re.compile(r'/opportunities/jobs/'))
-            # Ambil parent container dari link
-            job_cards = [card.find_parent() for card in job_cards if card.find_parent()]
-        
-        # Selector 4: Cari berdasarkan h2 title dan ambil container
-        if not job_cards:
-            titles = soup.find_all('h2')
-            job_cards = [title.find_parent('div') for title in titles if title.find_parent('div')]
-        
         print(f"Found {len(job_cards)} job cards")
 
         # Temukan elemen pagination dengan selector yang lebih fleksibel
@@ -95,6 +84,7 @@ def scrape_glints(work='Programmer', job_type='FULL_TIME', option_work='ONSITE',
                     last_page = max(page_numbers)
 
         results = []
+        seen_jobs = set()  # Set untuk tracking duplikat
 
         for job_card in job_cards:
             if not job_card:
@@ -155,8 +145,17 @@ def scrape_glints(work='Programmer', job_type='FULL_TIME', option_work='ONSITE',
             if logo_tag and logo_tag.has_attr('src'):
                 company_logo = logo_tag['src']
 
-            # Hanya tambahkan jika minimal title dan company ada
-            if title != 'N/A' or company_name != 'N/A':
+            # Buat unique identifier untuk mendeteksi duplikat
+            # Kombinasi title, company_name, dan location sebagai key unik
+            unique_key = f"{title.lower().strip()}|{company_name.lower().strip()}|{location.lower().strip()}"
+            
+            # Alternative: Gunakan link sebagai unique identifier jika ada
+            if link != 'N/A' and link.startswith('https://glints.com'):
+                unique_key = link
+            
+            # Hanya tambahkan jika tidak duplikat dan minimal title dan company ada
+            if (title != 'N/A' or company_name != 'N/A') and unique_key not in seen_jobs:
+                seen_jobs.add(unique_key)
                 results.append({
                     'title': title,
                     'salary': salary,
@@ -166,10 +165,13 @@ def scrape_glints(work='Programmer', job_type='FULL_TIME', option_work='ONSITE',
                     'link': link,
                 })
 
+        print(f"Successfully scraped {len(results)} unique jobs (removed duplicates)")
+
         # Tambahkan informasi halaman terakhir ke dalam hasil
         return ResponseHelper.success_response('Success find job', {
             'jobs': results,
-            'last_page': last_page
+            'total_jobs': len(results),
+            'duplicates_removed': len(job_cards) - len(results) if job_cards else 0
         })
 
     except Exception as e:
