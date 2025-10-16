@@ -10,8 +10,8 @@ class ResponseHelper:
         }), 200
 
     @staticmethod
-    def failure_response(message):
+    def failure_response(message, status_code=500):
         return jsonify({
             'status': 'failed',
             'message': message
-        }), 500
+        }), status_code

@@ -41,16 +41,50 @@ def scrape_indeed(keyword='programmer', location='', country='id', page=''):
         # Dapatkan instance cloudscraper
         scraper = CloudScraper.get_instance(cookies_file='app/config/indeed.json')
         
-        # Kirim permintaan ke URL
-        response = scraper.get(url)
+        # Add better headers to bypass 403
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.5',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'DNT': '1',
+            'Connection': 'keep-alive',
+            'Upgrade-Insecure-Requests': '1',
+            'Sec-Fetch-Dest': 'document',
+            'Sec-Fetch-Mode': 'navigate',
+            'Sec-Fetch-Site': 'none',
+            'Cache-Control': 'max-age=0'
+        }
+        
+        # Kirim permintaan ke URL with better headers
+        response = scraper.get(url, headers=headers, timeout=30)
+        
+        # Check for blocking
+        if response.status_code == 403:
+            return ResponseHelper.failure_response("Indeed is currently blocking requests. Please try other job sources.", status_code=503)
+        
         response.raise_for_status()
         html = response.text
 
         # Parsing HTML menggunakan BeautifulSoup
         soup = BeautifulSoup(html, 'html.parser')
         
-        # Dapatkan semua elemen pekerjaan
+        # Dapatkan semua elemen pekerjaan - try multiple selectors
         job_listings = soup.find_all('li', class_='css-1ac2h1w eu4oa1w0')
+        
+        # If no jobs found with first selector, try alternative selectors
+        if not job_listings:
+            job_listings = soup.find_all('div', class_='job_seen_beacon')
+        
+        if not job_listings:
+            job_listings = soup.find_all('div', attrs={'data-testid': 'slider_item'})
+        
+        if not job_listings:
+            # Try finding any job card
+            job_listings = soup.find_all('div', class_=lambda x: x and 'jobCard' in x) if soup else []
+        
+        print(f"🔍 Found {len(job_listings)} job listings from Indeed")
+        
         results = []
 
         for job in job_listings:
@@ -111,4 +145,21 @@ def scrape_indeed(keyword='programmer', location='', country='id', page=''):
         })
 
     except Exception as e:
-        return ResponseHelper.failure_response(f"Error: {str(e)}")
+        error_msg = str(e)
+        
+        # Check if it's a 403 blocking error
+        if "403" in error_msg or "Forbidden" in error_msg:
+            return ResponseHelper.failure_response(
+                "Indeed is currently blocking requests. Please try other job sources (Jobstreet, RemoteOK).",
+                status_code=503
+            )
+        
+        # Check if it's a timeout
+        if "timeout" in error_msg.lower() or "timed out" in error_msg.lower():
+            return ResponseHelper.failure_response(
+                "Indeed request timed out. Please try again or use other job sources.",
+                status_code=504
+            )
+        
+        # General error
+        return ResponseHelper.failure_response(f"Error scraping Indeed: {error_msg}", status_code=500)
