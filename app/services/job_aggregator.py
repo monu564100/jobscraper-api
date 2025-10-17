@@ -18,13 +18,17 @@ class JobAggregator:
     def __init__(self):
         self.sources = [
             'timesjobs',
+            'indeed',
             'linkedin',
             'remoteok',
+            'naukri',
+            'ziprecruiter',
             'aasaanjobs',
             'dare2compete',
             'freshersworld',
             'jobguru',
-            'myamcat'
+            'myamcat',
+            # 'jobspy',  # Enable if JobSpy docker image is available
         ]
         self.all_jobs = []
         self.progress = {}
@@ -192,11 +196,13 @@ class JobAggregator:
         Higher score = better match
         """
         score = 0.0
+        # Emphasize recency and work mode alignment
         weights = {
-            'recency': 0.35,      # 35% - Most important
-            'location': 0.30,     # 30% - Very important
-            'title_match': 0.25,  # 25% - Important
-            'has_url': 0.10       # 10% - Nice to have
+            'recency': 0.40,      # 40% - Most important
+            'location': 0.25,     # 25% - Very important
+            'title_match': 0.20,  # 20% - Important
+            'work_mode': 0.10,    # 10% - Prefer remote/hybrid if requested
+            'has_url': 0.05       # 5%  - Nice to have
         }
         
         # Recency score
@@ -235,6 +241,34 @@ class JobAggregator:
             user_preferences.get('jobTitle', '')
         )
         score += title_score * weights['title_match']
+
+        # Work mode preference score (remote/hybrid/onsite)
+        pref = (user_preferences.get('workMode') or '').lower()
+        job_loc_text = (job.get('location') or '')
+        job_title_text = (job.get('title') or '')
+        job_mode = (job.get('work_mode') or '').lower()
+        is_remote_field = job.get('isRemote') or job.get('is_remote')
+        text = f"{job_loc_text} {job_title_text} {job_mode}".lower()
+
+        job_is_remote = bool(is_remote_field) or ('remote' in text)
+        job_is_hybrid = ('hybrid' in text)
+        job_is_onsite = not (job_is_remote or job_is_hybrid)
+
+        work_mode_score = 0.5  # neutral
+        if pref:
+            if pref == 'remote':
+                work_mode_score = 1.0 if job_is_remote else (0.7 if job_is_hybrid else 0.3)
+            elif pref == 'hybrid':
+                work_mode_score = 1.0 if job_is_hybrid else (0.8 if job_is_remote else 0.5)
+            elif pref == 'onsite':
+                work_mode_score = 1.0 if job_is_onsite else 0.5
+            elif pref == 'any':
+                work_mode_score = 0.6
+        else:
+            # Slightly prefer remote/hybrid by default
+            work_mode_score = 0.7 if (job_is_remote or job_is_hybrid) else 0.5
+
+        score += work_mode_score * weights['work_mode']
         
         # URL validity score
         job_url = job.get('link', '') or job.get('url', '')
@@ -260,14 +294,18 @@ class JobAggregator:
         
         url_map = {
             'internshala': f'{base_url}/api/internshala?keyword={keyword}&location={location}&page=1',
+            'indeed': f'{base_url}/api/indeed?keyword={keyword}&location={location}&country=in&page=0',
             'linkedin': f'{base_url}/api/linkedin?keyword={keyword}&location={location}&limit=25',
             'remoteok': f'{base_url}/api/remoteok?keywords={keyword}',
+            'naukri': f'{base_url}/api/naukri?keyword={keyword}&location={location}&limit=30',
+            'ziprecruiter': f'{base_url}/api/ziprecruiter?search_term={keyword}&location={location}&distance=50&hours_old=168',
             'aasaanjobs': f'{base_url}/api/aasaanjobs?keyword={keyword}',
             'dare2compete': f'{base_url}/api/dare2compete',
             'freshersworld': f'{base_url}/api/freshersworld?keyword={keyword}&location={location}',
             'jobguru': f'{base_url}/api/jobguru?keyword={keyword}',
             'timesjobs': f'{base_url}/api/timesjobs?keyword={keyword}&location={location}',
-            'myamcat': f'{base_url}/api/myamcat?keyword={keyword}&location={location}'
+            'myamcat': f'{base_url}/api/myamcat?keyword={keyword}&location={location}',
+            'jobspy': f"{base_url}/api/jobspy?site_names=indeed,linkedin,glassdoor,zip_recruiter&search_term={keyword}&location={location}&results_wanted=25&hours_old=96"
         }
         
         if source not in url_map:
@@ -342,6 +380,12 @@ class JobAggregator:
         Filter and select top N jobs based on scoring
         """
         print(f"🔬 Analyzing {len(jobs)} jobs...")
+        # Strict recency filter (drop very old jobs)
+        try:
+            max_days_old = int(user_preferences.get('maxDaysOld', 14))
+        except Exception:
+            max_days_old = 14
+        cutoff_ts = int((datetime.now() - timedelta(days=max_days_old)).timestamp() * 1000)
         
         # Filter out invalid jobs
         valid_jobs = []
@@ -350,6 +394,10 @@ class JobAggregator:
             if not job.get('title') or not job.get('company'):
                 continue
             if job.get('title') == 'N/A' or job.get('company') == 'N/A':
+                continue
+            # Drop jobs older than cutoff when we have a valid timestamp
+            ts = self.parse_date_to_timestamp(job.get('posted_on') or job.get('postedAt') or job.get('datePosted') or '')
+            if ts > 0 and ts < cutoff_ts:
                 continue
             
             valid_jobs.append(job)
@@ -411,7 +459,7 @@ class JobAggregator:
 
         # Final sort: by recency (most recent first) using parsed timestamp
         def _ts(j: Dict[str, Any]) -> int:
-            ts = self.parse_date_to_timestamp(j.get('posted_on') or j.get('postedAt') or '')
+            ts = self.parse_date_to_timestamp(j.get('posted_on') or j.get('postedAt') or j.get('datePosted') or '')
             return ts
 
         selected_jobs.sort(key=lambda j: _ts(j), reverse=True)

@@ -13,6 +13,9 @@ from app.controllers.scrape_timesjobs import scrape_timesjobs
 from app.controllers.scrape_myamcat import scrape_myamcat
 from app.controllers.scrape_linkedin import scrape_linkedin
 from app.controllers.aggregate_jobs import get_aggregate_jobs
+from app.controllers.jobspy_proxy import jobspy_search
+from app.controllers.scrape_naukri import scrape_naukri
+from app.controllers.scrape_ziprecruiter import scrape_ziprecruiter
 
 scraper_bp = Blueprint("scraper", __name__)
 
@@ -188,4 +191,35 @@ def aggregate_jobs_route():
     - Ensures diversity (at least 2 from each working source)
     """
     return get_aggregate_jobs()
+
+@scraper_bp.route("/jobspy", methods=["GET"])
+def jobspy_route():
+    try:
+        return jobspy_search()
+    except Exception as e:
+        return {"status": "failed", "message": f"Error: {str(e)}"}, 500
+
+@scraper_bp.route("/naukri", methods=["GET"])
+def scrape_naukri_route():
+    try:
+        keyword = request.args.get("keyword", "developer")
+        location = request.args.get("location", "")
+        limit = int(request.args.get("limit", "20"))
+        return scrape_naukri(keyword, location, limit)
+    except Exception as e:
+        return {"status": "failed", "message": f"Error: {str(e)}"}, 500
+
+@scraper_bp.route("/ziprecruiter", methods=["GET"])
+def scrape_ziprecruiter_route():
+    try:
+        search_term = request.args.get("search_term", request.args.get("keyword", ""))
+        location = request.args.get("location", "")
+        distance = int(request.args.get("distance", "50"))
+        job_type = request.args.get("job_type", "")
+        is_remote = request.args.get("is_remote") == 'true'
+        hours_old = int(request.args.get("hours_old", "96"))
+        page = int(request.args.get("page", "1"))
+        return scrape_ziprecruiter(search_term, location, distance, job_type, is_remote, hours_old, page)
+    except Exception as e:
+        return {"status": "failed", "message": f"Error: {str(e)}"}, 500
 

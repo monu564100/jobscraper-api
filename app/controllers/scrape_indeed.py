@@ -101,12 +101,26 @@ def scrape_indeed(keyword='programmer', location='', country='id', page=''):
             location = location_tag.get_text(strip=True) if location_tag else 'N/A'
 
             # Ekstrak Deskripsi Singkat
-            description_tag = job.find('ul')
+            description_tag = job.find('div', {'data-testid': 'job-snippet'}) or job.find('ul')
             description = description_tag.get_text(strip=True) if description_tag else 'N/A'
 
             # Ekstrak Link Detail Pekerjaan
-            link_tag = job.find('a', class_='jcs-JobTitle')
-            link = f"https://{country}.indeed.com{link_tag['href']}" if link_tag and link_tag.has_attr('href') else 'N/A'
+            link_tag = job.find('a', class_='jcs-JobTitle') or job.find('a', attrs={'data-jk': True})
+            href = link_tag['href'] if link_tag and link_tag.has_attr('href') else None
+            if href and href.startswith('/'):
+                link = f"https://{country}.indeed.com{href}"
+            elif href:
+                link = href
+            else:
+                link = 'N/A'
+
+            # Posted date/time
+            time_tag = job.find('span', class_=lambda x: x and ('date' in x or 'myJobsState' in x)) or job.find('span', {'data-testid': 'myJobsStateDate'})
+            posted_on = time_tag.get_text(strip=True) if time_tag else 'Recently'
+
+            # Work mode flags
+            lower_blob = f"{title} {company} {location} {description}".lower()
+            is_remote = ('remote' in lower_blob or 'wfh' in lower_blob or 'work from home' in lower_blob)
 
             # Tambahkan ke hasil hanya jika semua kolom tidak N/A
             if not (title == 'N/A' and company == 'N/A' and location == 'N/A' and description == 'N/A'):
@@ -114,8 +128,12 @@ def scrape_indeed(keyword='programmer', location='', country='id', page=''):
                     'title': title,
                     'company': company,
                     'location': location,
+                    'description': description,
                     'short_description': description,
-                    'link': link
+                    'link': link,
+                    'posted_on': posted_on,
+                    'isRemote': is_remote,
+                    'source': 'Indeed'
                 })
 
         # Ekstrak Pagination

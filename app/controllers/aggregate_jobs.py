@@ -21,11 +21,15 @@ def get_aggregate_jobs():
         keyword = request.args.get('keyword', 'developer')
         location = request.args.get('location', '')
         job_title = request.args.get('jobTitle', keyword)
+        work_mode = request.args.get('workMode', '')  # remote | hybrid | onsite | any
+        max_days_old = request.args.get('maxDaysOld', '14')
         
         # User preferences for scoring
         user_preferences = {
             'jobTitle': job_title,
-            'location': location
+            'location': location,
+            'workMode': work_mode,
+            'maxDaysOld': max_days_old
         }
         
         print(f"🎯 Aggregating jobs for: {keyword} in {location}")
